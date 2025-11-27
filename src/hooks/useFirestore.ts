@@ -1,0 +1,266 @@
+import { useState, useEffect } from 'react';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  Timestamp,
+  DocumentData,
+  QueryConstraint,
+} from 'firebase/firestore';
+import { db, COLLECTIONS } from '../firebase';
+
+// Generic hook for fetching a single document
+export const useDocument = <T extends DocumentData>(
+  collectionName: string,
+  documentId: string | null
+) => {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!documentId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchDocument = async () => {
+      try {
+        setLoading(true);
+        const docRef = doc(db, collectionName, documentId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setData({ id: docSnap.id, ...docSnap.data() } as T);
+        } else {
+          setData(null);
+        }
+        setError(null);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch document');
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocument();
+  }, [collectionName, documentId]);
+
+  return { data, loading, error };
+};
+
+// Generic hook for fetching a collection
+export const useCollection = <T extends DocumentData>(
+  collectionName: string,
+  constraints: QueryConstraint[] = []
+) => {
+  const [data, setData] = useState<T[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCollection = async () => {
+      try {
+        setLoading(true);
+        const collectionRef = collection(db, collectionName);
+        const q = query(collectionRef, ...constraints);
+        const querySnapshot = await getDocs(q);
+
+        const documents = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as T[];
+
+        setData(documents);
+        setError(null);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch collection');
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCollection();
+  }, [collectionName, JSON.stringify(constraints)]);
+
+  const refetch = async () => {
+    try {
+      setLoading(true);
+      const collectionRef = collection(db, collectionName);
+      const q = query(collectionRef, ...constraints);
+      const querySnapshot = await getDocs(q);
+
+      const documents = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as T[];
+
+      setData(documents);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch collection');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { data, loading, error, refetch };
+};
+
+// Hook for CRUD operations
+export const useFirestoreCRUD = <T extends DocumentData>(collectionName: string) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const create = async (data: Partial<T>): Promise<string | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const docData = {
+        ...data,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
+
+      const collectionRef = collection(db, collectionName);
+      const docRef = await addDoc(collectionRef, docData);
+
+      return docRef.id;
+    } catch (err: any) {
+      setError(err.message || 'Failed to create document');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const update = async (documentId: string, data: Partial<T>): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const docData = {
+        ...data,
+        updatedAt: Timestamp.now(),
+      };
+
+      const docRef = doc(db, collectionName, documentId);
+      await updateDoc(docRef, docData);
+
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update document');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const remove = async (documentId: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const docRef = doc(db, collectionName, documentId);
+      await deleteDoc(docRef);
+
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete document');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { create, update, remove, loading, error };
+};
+
+// Specific hooks for each collection
+
+// Profile hook
+export const useProfile = () => {
+  return useDocument('profile', 'main');
+};
+
+// Music hooks
+export const useMusic = () => {
+  return useCollection(COLLECTIONS.MUSIC, [orderBy('releaseDate', 'desc')]);
+};
+
+export const useMusicById = (id: string | null) => {
+  return useDocument(COLLECTIONS.MUSIC, id);
+};
+
+// Videos hooks
+export const useVideos = () => {
+  return useCollection(COLLECTIONS.VIDEOS, [orderBy('createdAt', 'desc')]);
+};
+
+export const useVideoById = (id: string | null) => {
+  return useDocument(COLLECTIONS.VIDEOS, id);
+};
+
+// Events hooks
+export const useUpcomingEvents = () => {
+  return useCollection(COLLECTIONS.EVENTS, [
+    where('isPast', '==', false),
+    orderBy('date', 'asc'),
+  ]);
+};
+
+export const usePastEvents = () => {
+  return useCollection(COLLECTIONS.EVENTS, [
+    where('isPast', '==', true),
+    orderBy('date', 'desc'),
+    limit(10),
+  ]);
+};
+
+export const useEventById = (id: string | null) => {
+  return useDocument(COLLECTIONS.EVENTS, id);
+};
+
+// Posts hooks
+export const usePublishedPosts = () => {
+  return useCollection(COLLECTIONS.POSTS, [
+    where('status', '==', 'published'),
+    orderBy('publishDate', 'desc'),
+  ]);
+};
+
+export const useAllPosts = () => {
+  return useCollection(COLLECTIONS.POSTS, [orderBy('publishDate', 'desc')]);
+};
+
+export const usePostById = (id: string | null) => {
+  return useDocument(COLLECTIONS.POSTS, id);
+};
+
+// Contact messages hooks
+export const useContactMessages = () => {
+  return useCollection(COLLECTIONS.CONTACT_MESSAGES, [orderBy('createdAt', 'desc')]);
+};
+
+export const useUnreadMessages = () => {
+  return useCollection(COLLECTIONS.CONTACT_MESSAGES, [
+    where('isRead', '==', false),
+    orderBy('createdAt', 'desc'),
+  ]);
+};
+
+// Social links hooks
+export const useSocialLinks = () => {
+  return useCollection(COLLECTIONS.SOCIAL_LINKS, [orderBy('order', 'asc')]);
+};
