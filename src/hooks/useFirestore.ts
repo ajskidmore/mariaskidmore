@@ -184,7 +184,29 @@ export const useFirestoreCRUD = <T extends DocumentData>(collectionName: string)
     }
   };
 
-  return { create, update, remove, loading, error };
+  const getAll = async (): Promise<T[]> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const collectionRef = collection(db, collectionName);
+      const querySnapshot = await getDocs(collectionRef);
+
+      const documents = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as unknown as T[];
+
+      return documents;
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch documents');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { create, update, remove, getAll, loading, error };
 };
 
 // Specific hooks for each collection

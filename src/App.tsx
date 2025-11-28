@@ -17,6 +17,13 @@ import Contact from './pages/Contact';
 // Admin Pages
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
+import Profile from './pages/admin/Profile';
+import MusicManager from './pages/admin/MusicManager';
+import VideoManager from './pages/admin/VideoManager';
+import EventsManager from './pages/admin/EventsManager';
+import PostsManager from './pages/admin/PostsManager';
+import MessagesViewer from './pages/admin/MessagesViewer';
+import SocialLinksEditor from './pages/admin/SocialLinksEditor';
 
 // Layout wrapper for public pages
 const PublicLayout = ({ children }: { children: React.ReactNode }) => {
@@ -112,12 +119,12 @@ function App() {
               }
             />
 
-            {/* Placeholder routes for admin pages (will be implemented later) */}
+            {/* Admin Management Pages */}
             <Route
               path="/admin/profile"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Profile />
                 </ProtectedRoute>
               }
             />
@@ -125,7 +132,7 @@ function App() {
               path="/admin/music"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <MusicManager />
                 </ProtectedRoute>
               }
             />
@@ -133,7 +140,7 @@ function App() {
               path="/admin/videos"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <VideoManager />
                 </ProtectedRoute>
               }
             />
@@ -141,7 +148,7 @@ function App() {
               path="/admin/events"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <EventsManager />
                 </ProtectedRoute>
               }
             />
@@ -149,7 +156,7 @@ function App() {
               path="/admin/posts"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <PostsManager />
                 </ProtectedRoute>
               }
             />
@@ -157,7 +164,7 @@ function App() {
               path="/admin/messages"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <MessagesViewer />
                 </ProtectedRoute>
               }
             />
@@ -165,7 +172,7 @@ function App() {
               path="/admin/social"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <SocialLinksEditor />
                 </ProtectedRoute>
               }
             />
