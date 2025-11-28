@@ -81,22 +81,73 @@ export const Footer = () => {
             <h4 className="font-semibold text-dark-text-primary mb-4">
               Connect
             </h4>
-            {socialLinks && socialLinks.length > 0 ? (
+            {socialLinks ? (
               <div className="flex flex-wrap gap-3">
-                {socialLinks.map((social) => (
+                {socialLinks.instagram && (
                   <motion.a
-                    key={social.id}
-                    href={social.url}
+                    href={socialLinks.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 rounded-full bg-gray-800 hover:bg-primary-500 text-dark-text-primary hover:text-white transition-colors"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    aria-label={social.platform}
+                    aria-label="Instagram"
                   >
-                    {getSocialIcon(social.platform)}
+                    {getSocialIcon('instagram')}
                   </motion.a>
-                ))}
+                )}
+                {socialLinks.facebook && (
+                  <motion.a
+                    href={socialLinks.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-gray-800 hover:bg-primary-500 text-dark-text-primary hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Facebook"
+                  >
+                    {getSocialIcon('facebook')}
+                  </motion.a>
+                )}
+                {socialLinks.youtube && (
+                  <motion.a
+                    href={socialLinks.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-gray-800 hover:bg-primary-500 text-dark-text-primary hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="YouTube"
+                  >
+                    {getSocialIcon('youtube')}
+                  </motion.a>
+                )}
+                {socialLinks.twitter && (
+                  <motion.a
+                    href={socialLinks.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-gray-800 hover:bg-primary-500 text-dark-text-primary hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Twitter"
+                  >
+                    {getSocialIcon('twitter')}
+                  </motion.a>
+                )}
+                {socialLinks.spotify && (
+                  <motion.a
+                    href={socialLinks.spotify}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-gray-800 hover:bg-primary-500 text-dark-text-primary hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Spotify"
+                  >
+                    {getSocialIcon('spotify')}
+                  </motion.a>
+                )}
               </div>
             ) : (
               <p className="text-sm text-dark-text-secondary">

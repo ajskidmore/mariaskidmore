@@ -250,7 +250,7 @@ export const useProfile = () => {
 
 // Music hooks
 export const useMusic = () => {
-  return useCollection(COLLECTIONS.MUSIC, [orderBy('releaseDate', 'desc')]);
+  return useCollection(COLLECTIONS.MUSIC);
 };
 
 export const useMusicById = (id: string | null) => {
@@ -259,7 +259,7 @@ export const useMusicById = (id: string | null) => {
 
 // Videos hooks
 export const useVideos = () => {
-  return useCollection(COLLECTIONS.VIDEOS, [orderBy('createdAt', 'desc')]);
+  return useCollection(COLLECTIONS.VIDEOS);
 };
 
 export const useVideoById = (id: string | null) => {
@@ -268,17 +268,20 @@ export const useVideoById = (id: string | null) => {
 
 // Events hooks
 export const useUpcomingEvents = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   return useCollection(COLLECTIONS.EVENTS, [
-    where('isPast', '==', false),
+    where('date', '>=', today),
     orderBy('date', 'asc'),
   ]);
 };
 
 export const usePastEvents = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   return useCollection(COLLECTIONS.EVENTS, [
-    where('isPast', '==', true),
+    where('date', '<', today),
     orderBy('date', 'desc'),
-    limit(10),
   ]);
 };
 
@@ -289,7 +292,7 @@ export const useEventById = (id: string | null) => {
 // Posts hooks
 export const usePublishedPosts = () => {
   return useCollection(COLLECTIONS.POSTS, [
-    where('status', '==', 'published'),
+    where('published', '==', true),
     orderBy('publishDate', 'desc'),
   ]);
 };
@@ -314,7 +317,39 @@ export const useUnreadMessages = () => {
   ]);
 };
 
-// Social links hooks
+// Social links hook - fetches first document from collection
 export const useSocialLinks = () => {
-  return useCollection(COLLECTIONS.SOCIAL_LINKS, [orderBy('order', 'asc')]);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSocialLinks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const collectionRef = collection(db, COLLECTIONS.SOCIAL_LINKS);
+        const querySnapshot = await getDocs(collectionRef);
+
+        if (!querySnapshot.empty) {
+          const firstDoc = querySnapshot.docs[0];
+          setData({
+            id: firstDoc.id,
+            ...firstDoc.data(),
+          });
+        } else {
+          setData(null);
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch social links');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSocialLinks();
+  }, []);
+
+  return { data, loading, error };
 };
