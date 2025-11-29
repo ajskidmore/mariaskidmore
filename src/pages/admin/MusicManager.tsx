@@ -15,21 +15,19 @@ const musicSchema = z.object({
   artist: z.string().optional(),
   description: z.string().optional(),
   coverImageURL: z.string().optional(),
-  streamingLinks: z.array(z.object({
-    platform: z.string(),
-    url: z.string().url('Invalid URL'),
-  })).optional(),
+  spotifyURL: z.string().optional(),
+  appleMusicURL: z.string().optional(),
+  youtubeURL: z.string().optional(),
 });
 
 type MusicFormData = z.infer<typeof musicSchema>;
 
 export const MusicManager = () => {
-  const { data: musicList, loading } = useMusic();
+  const { data: musicList, loading, refetch } = useMusic();
   const { create, update, remove } = useFirestoreCRUD(COLLECTIONS.MUSIC);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [streamingLinks, setStreamingLinks] = useState<Array<{ platform: string; url: string }>>([]);
 
   const {
     register,
@@ -45,7 +43,9 @@ export const MusicManager = () => {
       artist: '',
       description: '',
       coverImageURL: '',
-      streamingLinks: [],
+      spotifyURL: '',
+      appleMusicURL: '',
+      youtubeURL: '',
     },
   });
 
@@ -58,50 +58,34 @@ export const MusicManager = () => {
     setValue('artist', music.artist || '');
     setValue('description', music.description || '');
     setValue('coverImageURL', music.coverImageURL || '');
-    setStreamingLinks(music.streamingLinks || []);
+    setValue('spotifyURL', music.spotifyURL || '');
+    setValue('appleMusicURL', music.appleMusicURL || '');
+    setValue('youtubeURL', music.youtubeURL || '');
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setShowForm(false);
-    setStreamingLinks([]);
     reset();
   };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this music entry?')) {
       await remove(id);
+      await refetch();
     }
-  };
-
-  const addStreamingLink = () => {
-    setStreamingLinks([...streamingLinks, { platform: '', url: '' }]);
-  };
-
-  const updateStreamingLink = (index: number, field: 'platform' | 'url', value: string) => {
-    const updated = [...streamingLinks];
-    updated[index][field] = value;
-    setStreamingLinks(updated);
-  };
-
-  const removeStreamingLink = (index: number) => {
-    setStreamingLinks(streamingLinks.filter((_, i) => i !== index));
   };
 
   const onSubmit = async (data: MusicFormData) => {
     setSaving(true);
 
-    const musicData = {
-      ...data,
-      streamingLinks: streamingLinks.filter(link => link.platform && link.url),
-    };
-
     try {
       if (editingId) {
-        await update(editingId, musicData);
+        await update(editingId, data);
       } else {
-        await create(musicData);
+        await create(data);
       }
+      await refetch();
       handleCancelEdit();
     } catch (error) {
       console.error('Error saving music:', error);
@@ -115,23 +99,23 @@ export const MusicManager = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-beige">
       {/* Header */}
-      <header className="bg-gray-800 shadow-sm border-b border-gray-700">
+      <header className="bg-gradient-grey shadow-sm border-b border-grey">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 to="/admin/dashboard"
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-grey rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-dark-text-primary" />
+                <ArrowLeft className="w-5 h-5 text-grey-dark" />
               </Link>
               <div>
-                <h1 className="font-display text-2xl font-bold text-primary-300">
+                <h1 className="font-display text-2xl font-bold text-beige-light">
                   Music Manager
                 </h1>
-                <p className="text-sm text-dark-text-secondary">
+                <p className="text-sm text-beige">
                   Manage your music and recordings
                 </p>
               </div>
@@ -161,14 +145,14 @@ export const MusicManager = () => {
               className="card mb-8"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display text-xl font-bold text-dark-text-primary">
+                <h2 className="font-display text-xl font-bold text-grey-dark">
                   {editingId ? 'Edit Music' : 'Add New Music'}
                 </h2>
                 <button
                   onClick={handleCancelEdit}
-                  className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-grey rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-dark-text-primary" />
+                  <X className="w-5 h-5 text-grey-dark" />
                 </button>
               </div>
 
@@ -185,7 +169,7 @@ export const MusicManager = () => {
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-text-primary mb-2">
+                  <label className="block text-sm font-medium text-grey-dark mb-2">
                     Title *
                   </label>
                   <input
@@ -201,7 +185,7 @@ export const MusicManager = () => {
 
                 {/* Artist */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-text-primary mb-2">
+                  <label className="block text-sm font-medium text-grey-dark mb-2">
                     Artist
                   </label>
                   <input
@@ -214,7 +198,7 @@ export const MusicManager = () => {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-text-primary mb-2">
+                  <label className="block text-sm font-medium text-grey-dark mb-2">
                     Description
                   </label>
                   <textarea
@@ -226,45 +210,46 @@ export const MusicManager = () => {
                 </div>
 
                 {/* Streaming Links */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-dark-text-primary">
-                      Streaming Links
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-grey-dark">Streaming Links</h3>
+
+                  {/* Spotify */}
+                  <div>
+                    <label className="block text-sm font-medium text-grey-dark mb-2">
+                      Spotify URL
                     </label>
-                    <button
-                      type="button"
-                      onClick={addStreamingLink}
-                      className="text-sm text-primary-400 hover:text-primary-300"
-                    >
-                      + Add Link
-                    </button>
+                    <input
+                      {...register('spotifyURL')}
+                      type="url"
+                      className="input-field"
+                      placeholder="https://open.spotify.com/..."
+                    />
                   </div>
-                  <div className="space-y-3">
-                    {streamingLinks.map((link, index) => (
-                      <div key={index} className="flex gap-3">
-                        <input
-                          type="text"
-                          value={link.platform}
-                          onChange={(e) => updateStreamingLink(index, 'platform', e.target.value)}
-                          className="input-field flex-1"
-                          placeholder="Platform (e.g., Spotify, Apple Music)"
-                        />
-                        <input
-                          type="url"
-                          value={link.url}
-                          onChange={(e) => updateStreamingLink(index, 'url', e.target.value)}
-                          className="input-field flex-[2]"
-                          placeholder="https://..."
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeStreamingLink(index)}
-                          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5 text-red-400" />
-                        </button>
-                      </div>
-                    ))}
+
+                  {/* Apple Music */}
+                  <div>
+                    <label className="block text-sm font-medium text-grey-dark mb-2">
+                      Apple Music URL
+                    </label>
+                    <input
+                      {...register('appleMusicURL')}
+                      type="url"
+                      className="input-field"
+                      placeholder="https://music.apple.com/..."
+                    />
+                  </div>
+
+                  {/* YouTube */}
+                  <div>
+                    <label className="block text-sm font-medium text-grey-dark mb-2">
+                      YouTube URL
+                    </label>
+                    <input
+                      {...register('youtubeURL')}
+                      type="url"
+                      className="input-field"
+                      placeholder="https://youtube.com/..."
+                    />
                   </div>
                 </div>
 
@@ -273,7 +258,7 @@ export const MusicManager = () => {
                   <button
                     type="button"
                     onClick={handleCancelEdit}
-                    className="px-6 py-2 bg-gray-700 text-dark-text-primary rounded-lg hover:bg-gray-600 transition-colors"
+                    className="px-6 py-2 bg-grey text-grey-dark rounded-lg hover:bg-grey-dark transition-colors"
                   >
                     Cancel
                   </button>
@@ -312,7 +297,7 @@ export const MusicManager = () => {
                 className="card group"
               >
                 {/* Cover Image */}
-                <div className="relative aspect-square mb-4 rounded-lg overflow-hidden bg-gray-800">
+                <div className="relative aspect-square mb-4 rounded-lg overflow-hidden bg-gradient-grey">
                   {music.coverImageURL ? (
                     <img
                       src={music.coverImageURL}
@@ -321,13 +306,13 @@ export const MusicManager = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <MusicIcon className="w-16 h-16 text-gray-600" />
+                      <MusicIcon className="w-16 h-16 text-grey" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <button
                       onClick={() => handleEdit(music)}
-                      className="p-2 bg-primary-500 rounded-full hover:bg-primary-600 transition-colors"
+                      className="p-2 bg-grey-dark rounded-full hover:bg-grey transition-colors"
                     >
                       <Edit2 className="w-5 h-5 text-white" />
                     </button>
@@ -341,41 +326,62 @@ export const MusicManager = () => {
                 </div>
 
                 {/* Info */}
-                <h3 className="font-display text-lg font-bold text-dark-text-primary mb-1">
+                <h3 className="font-display text-lg font-bold text-grey-dark mb-1">
                   {music.title}
                 </h3>
                 {music.artist && (
-                  <p className="text-sm text-dark-text-secondary mb-2">{music.artist}</p>
+                  <p className="text-sm text-grey-dark mb-2">{music.artist}</p>
                 )}
                 {music.description && (
-                  <p className="text-sm text-dark-text-secondary mb-3 line-clamp-2">
+                  <p className="text-sm text-grey-dark mb-3 line-clamp-2">
                     {music.description}
                   </p>
                 )}
 
                 {/* Streaming Links */}
-                {music.streamingLinks && music.streamingLinks.length > 0 && (
+                {(music.spotifyURL || music.appleMusicURL || music.youtubeURL) && (
                   <div className="flex flex-wrap gap-2 mt-auto">
-                    {music.streamingLinks.map((link: any, idx: number) => (
+                    {music.spotifyURL && (
                       <a
-                        key={idx}
-                        href={link.url}
+                        href={music.spotifyURL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-primary-900/30 text-primary-300 rounded-full hover:bg-primary-900/50"
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-beige-dark text-grey-dark rounded-full hover:bg-grey"
                       >
-                        {link.platform}
+                        Spotify
                         <ExternalLink className="w-3 h-3" />
                       </a>
-                    ))}
+                    )}
+                    {music.appleMusicURL && (
+                      <a
+                        href={music.appleMusicURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-beige-dark text-grey-dark rounded-full hover:bg-grey"
+                      >
+                        Apple Music
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                    {music.youtubeURL && (
+                      <a
+                        href={music.youtubeURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-beige-dark text-grey-dark rounded-full hover:bg-grey"
+                      >
+                        YouTube
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
                   </div>
                 )}
               </motion.div>
             ))
           ) : (
             <div className="col-span-full text-center py-20">
-              <MusicIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-dark-text-secondary">No music added yet. Click "Add Music" to get started.</p>
+              <MusicIcon className="w-16 h-16 text-grey mx-auto mb-4" />
+              <p className="text-beige">No music added yet. Click "Add Music" to get started.</p>
             </div>
           )}
         </div>

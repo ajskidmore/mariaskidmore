@@ -1,17 +1,31 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMusic } from '../hooks/useFirestore';
 import Loading from '../components/common/Loading';
-import { Music as MusicIcon, ExternalLink } from 'lucide-react';
+import { Music as MusicIcon } from 'lucide-react';
+import FeaturedContentModal from '../components/FeaturedContentModal';
 
 export const Music = () => {
   const { data: music, loading } = useMusic();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedMusic, setSelectedMusic] = useState<any>(null);
 
   if (loading) {
     return <Loading fullScreen message="Loading music..." />;
   }
 
+  const openModal = (musicItem: any) => {
+    setSelectedMusic(musicItem);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedMusic(null);
+  };
+
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 bg-dark-background">
+    <div className="min-h-screen pt-32 pb-20 px-4 bg-beige">
       <div className="container mx-auto max-w-6xl">
         <motion.div
           className="text-center mb-16"
@@ -19,10 +33,10 @@ export const Music = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="font-display text-5xl lg:text-6xl font-bold text-primary-200 mb-4">
+          <h1 className="font-display text-5xl lg:text-6xl font-bold text-grey-dark mb-4">
             Music
           </h1>
-          <p className="text-lg text-dark-text-secondary max-w-2xl mx-auto">
+          <p className="text-lg text-grey max-w-2xl mx-auto">
             Explore my musical recordings and performances
           </p>
         </motion.div>
@@ -30,9 +44,10 @@ export const Music = () => {
         {music && music.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {music.map((item, index) => (
-              <motion.div
+              <motion.button
                 key={item.id}
-                className="card group cursor-pointer"
+                onClick={() => openModal(item)}
+                className="card group cursor-pointer text-left hover:shadow-xl transition-shadow"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -54,39 +69,39 @@ export const Music = () => {
                 </div>
 
                 {/* Info */}
-                <h3 className="font-display text-xl font-bold text-dark-text-primary mb-2 group-hover:text-primary-400 transition-colors">
+                <h3 className="font-display text-xl font-bold text-grey-dark mb-2">
                   {item.title}
                 </h3>
                 {item.artist && (
-                  <p className="text-sm text-dark-text-secondary mb-2">
+                  <p className="text-sm text-grey mb-2">
                     {item.artist}
                   </p>
                 )}
                 {item.description && (
-                  <p className="text-sm text-dark-text-secondary mb-4 line-clamp-2">
+                  <p className="text-sm text-grey mb-4 line-clamp-2">
                     {item.description}
                   </p>
                 )}
 
-                {/* Links */}
-                {item.streamingLinks && item.streamingLinks.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {item.streamingLinks.map((link: any, idx: number) => (
-                      <a
-                        key={idx}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs px-3 py-1 bg-primary-900/30 text-primary-300 rounded-full hover:bg-primary-900/50 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {link.platform}
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
+                {/* Platform indicators */}
+                <div className="flex flex-wrap gap-2">
+                  {item.spotifyURL && (
+                    <span className="text-xs px-2 py-1 bg-beige-dark text-grey-dark rounded-full">
+                      Spotify
+                    </span>
+                  )}
+                  {item.appleMusicURL && (
+                    <span className="text-xs px-2 py-1 bg-beige-dark text-grey-dark rounded-full">
+                      Apple Music
+                    </span>
+                  )}
+                  {item.youtubeURL && (
+                    <span className="text-xs px-2 py-1 bg-beige-dark text-grey-dark rounded-full">
+                      YouTube
+                    </span>
+                  )}
+                </div>
+              </motion.button>
             ))}
           </div>
         ) : (
@@ -96,13 +111,21 @@ export const Music = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <MusicIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-dark-text-secondary">
+            <MusicIcon className="w-16 h-16 text-grey mx-auto mb-4" />
+            <p className="text-grey">
               No music has been added yet. Check back soon!
             </p>
           </motion.div>
         )}
       </div>
+
+      {/* Modal */}
+      <FeaturedContentModal
+        isOpen={modalOpen}
+        onClose={closeModal}
+        content={selectedMusic}
+        type="music"
+      />
     </div>
   );
 };

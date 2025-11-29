@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-dark-900 text-gray-100 font-sans antialiased;
+    @apply bg-beige text-grey-dark font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
@@ -25,24 +25,24 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-dark-800;
+    @apply bg-beige-light;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-primary-600 rounded-full;
+    @apply bg-grey rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary-500;
+    @apply bg-grey-dark;
   }
 
   /* React Quill Editor Styles */
   .ql-toolbar {
-    @apply bg-dark-700 border-dark-600 rounded-t-lg;
+    @apply bg-white border-grey-light rounded-t-lg;
   }
 
   .ql-container {
-    @apply bg-dark-800 border-dark-600 rounded-b-lg text-gray-100;
+    @apply bg-white border-grey-light rounded-b-lg text-grey-dark;
   }
 
   .ql-editor {
@@ -50,48 +50,48 @@
   }
 
   .ql-snow .ql-stroke {
-    @apply stroke-gray-300;
+    @apply stroke-grey-dark;
   }
 
   .ql-snow .ql-fill {
-    @apply fill-gray-300;
+    @apply fill-grey-dark;
   }
 
   .ql-snow .ql-picker-label {
-    @apply text-gray-300;
+    @apply text-grey-dark;
   }
 
   /* Loading Skeleton */
   .skeleton {
-    @apply animate-pulse bg-dark-700 rounded;
+    @apply animate-pulse bg-beige-light rounded;
   }
 
   /* Glassmorphism Effect */
   .glass {
-    @apply bg-white/10 backdrop-blur-lg;
+    @apply bg-beige/10 backdrop-blur-lg;
   }
 
   /* Button Styles */
   .btn-primary {
-    @apply px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95;
+    @apply px-6 py-3 bg-grey-dark hover:bg-grey text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95;
   }
 
   .btn-secondary {
-    @apply px-6 py-3 bg-dark-700 hover:bg-dark-600 text-white font-semibold rounded-lg transition-all duration-300;
+    @apply px-6 py-3 bg-beige-dark hover:bg-beige text-grey-dark font-semibold rounded-lg transition-all duration-300;
   }
 
   .btn-accent {
-    @apply px-6 py-3 bg-gradient-accent text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95;
+    @apply px-6 py-3 bg-grey hover:bg-grey-dark text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95;
   }
 
   /* Input Styles */
   .input-field {
-    @apply w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 bg-white border border-grey-light rounded-lg text-grey-dark placeholder-grey focus:outline-none focus:ring-2 focus:ring-grey-dark focus:border-transparent transition-all duration-200;
   }
 
   /* Card Styles */
   .card {
-    @apply bg-dark-800 border border-dark-700 rounded-xl p-6 transition-all duration-300 hover:border-primary-600 hover:shadow-xl hover:shadow-primary-900/20;
+    @apply bg-white border border-beige-dark rounded-xl p-6 transition-all duration-300 hover:border-grey hover:shadow-xl hover:shadow-grey/20;
   }
 
   /* Section Container */
